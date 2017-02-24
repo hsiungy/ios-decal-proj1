@@ -8,7 +8,7 @@
 
 import UIKit
 
-class HangmanViewController: UIViewController {
+class HangmanViewController: UIViewController, UITextFieldDelegate {
     
     @IBOutlet weak var hangman: UIImageView!
     @IBOutlet weak var word: UILabel!
@@ -26,6 +26,7 @@ class HangmanViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.letterGuess!.delegate = self
         let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(HangmanViewController.dismissKeyboard))
         view.addGestureRecognizer(tap)
         
@@ -35,6 +36,7 @@ class HangmanViewController: UIViewController {
         print(phrase)
         phraseChars = [Character](phrase.characters)
         phraseLen = phrase.characters.count
+        incorrectGuesses.text = "Incorrect Guesses: "
         
         boolsArr = [Bool](repeating: false, count: phraseLen!)
         for c in phraseChars! {
@@ -47,6 +49,15 @@ class HangmanViewController: UIViewController {
             }
         }
         displayWord()
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        self.guessAction(nil)
+        return true;
+    }
+    
+    func dismissKeyboard() {
+        view.endEditing(true)
     }
     
     func displayWord() {
@@ -73,7 +84,7 @@ class HangmanViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    @IBAction func guessAction(_ sender: UIButton) {
+    @IBAction func guessAction(_ sender: UIButton?) {
         let guess = letterGuess.text
         if (guess!.characters.count == 1) {
             if (wordChars.contains(guess!)) {
@@ -88,7 +99,7 @@ class HangmanViewController: UIViewController {
                                                   preferredStyle: .alert)
                     let newGame = UIAlertAction(title: "Start over",
                                                 style: .default) {
-                                                    action in self.reset()
+                                                    action in self.newGame(nil)
                     }
                     alert.addAction(newGame)
                     self.present(alert, animated: true, completion: nil)
@@ -106,7 +117,7 @@ class HangmanViewController: UIViewController {
                                                       preferredStyle: .alert)
                         let newGame = UIAlertAction(title: "Try again",
                                                     style: .default) {
-                                                        action in self.reset()
+                                                        action in self.newGame(nil)
                         }
                         alert.addAction(newGame)
                         self.present(alert, animated: true, completion: nil)
@@ -128,11 +139,7 @@ class HangmanViewController: UIViewController {
         return true
     }
     
-    @IBAction func newGame(_ sender: UIButton) {
-        reset()
-    }
-    
-    func reset() {
+    @IBAction func newGame(_ sender: UIButton?) {
         let hangmanPhrases = HangmanPhrases()
         self.phrase = hangmanPhrases.getRandomPhrase()
         print(self.phrase!)
@@ -150,21 +157,13 @@ class HangmanViewController: UIViewController {
         let imageName = "hangman" + String(wrongCount)
         hangman.image = UIImage(named: imageName)
         incorrectGuesses.text = "Incorrect Guesses: "
+        for i in 0...self.phraseLen!-1 {
+            if (String(self.phraseChars![i]) == " ") {
+                self.boolsArr![i] = true
+            }
+        }
         self.displayWord()
     }
-    
-//    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-//        self.view.endEditing(true)
-//    }
-    
-    func dismissKeyboard() {
-        view.endEditing(true)
-    }
-    
-//    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-//        textField.resignFirstResponder()
-//        return true
-//    }
     
     
 
